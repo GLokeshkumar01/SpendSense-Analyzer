@@ -1,0 +1,97 @@
+FILENAME = "expenses.txt"
+
+
+def read_expenses():
+    data = []
+    try:
+        with open(FILENAME, "r") as file:
+            for line in file:
+                parts = line.strip().split(",")
+                if len(parts) == 2:
+                    category = parts[0].strip()
+                    amount = float(parts[1].strip())
+                    data.append((category, amount))
+    except FileNotFoundError:
+        open(FILENAME, "w").close()
+    return data
+
+
+def add_expense():
+    category = input("Enter category: ").strip()
+    amount = input("Enter amount: ").strip()
+
+    if not category or not amount:
+        print("Category/Amount cannot be empty!\n")
+        return
+
+    try:
+        amount = float(amount)
+    except ValueError:
+        print("Invalid amount!\n")
+        return
+
+    with open(FILENAME, "a") as file:
+        file.write(f"{category},{amount}\n")
+
+    print("✔ Expense added successfully!\n")
+
+
+def analyze_expenses():
+    data = read_expenses()
+    if not data:
+        print("No expenses found!\n")
+        return
+
+    total = sum(amount for _, amount in data)
+    category_summary = {}
+
+    for category, amount in data:
+        category_summary[category] = category_summary.get(category, 0) + amount
+
+    highest_category = max(category_summary, key=category_summary.get)
+
+    print("\n------ SpendSense Report ------")
+    print(f"Total Spending: ₹{total}\n")
+
+    print("Category-wise Breakdown:")
+    for cat, amt in category_summary.items():
+        print(f"  {cat}: ₹{amt}")
+
+    print(f"\nHighest Spending Category: {highest_category} (₹{category_summary[highest_category]})")
+
+    daily_avg = total / len(data)
+    weekly_avg = daily_avg * 7
+    monthly_projection = daily_avg * 30
+
+    print(f"\nDaily Average Spend: ₹{daily_avg:.2f}")
+    print(f"Estimated Weekly Spend: ₹{weekly_avg:.2f}")
+    print(f"Projected Monthly Spend: ₹{monthly_projection:.2f}")
+
+    if category_summary[highest_category] > total * 0.4:
+        print("\nTip: Reduce spending in your highest category!")
+
+    print("------------------------------\n")
+
+
+def menu():
+    while True:
+        print("====== SpendSense Analyzer ======")
+        print("1. Add Expense")
+        print("2. Analyze Spending")
+        print("3. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            add_expense()
+        elif choice == "2":
+            analyze_expenses()
+        elif choice == "3":
+            print("Thank you for using SpendSense Analyzer!")
+            break
+        else:
+            print("Invalid choice.\n")
+
+
+if __name__ == "__main__":
+    menu()
